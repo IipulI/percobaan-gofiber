@@ -2,7 +2,7 @@
 List API
 
 | API Path  | Method | Deskripsi |
-| ------------- | ------------- |
+| ------------- | -------------  | ------------- |
 | /books  | GET | Get semua buku  |
 | /book/:id  | GET | Get buku sesuai dengan id  |
 | /book/insert | POST | Membuat data buku baru |
