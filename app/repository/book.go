@@ -13,7 +13,7 @@ type BookRepository interface {
 	Insert(ctx context.Context, book model.Book) (model.Book, error)
 	FindById(ctx context.Context, id int) (model.Book, error)
 	FindAll(ctx context.Context) ([]model.Book, error)
-	Update(ctx context.Context, id int, b model.Book) (string, error)
+	Update(ctx context.Context, id int, b *model.Book) (string, error)
 	Delete(ctx context.Context, id int) (string, error)
 }
 
@@ -70,9 +70,9 @@ func (repository *BookRepositoryImpl) FindAll(ctx context.Context) ([]model.Book
 	return books, nil
 }
 
-func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b model.Book) (string, error) {
+func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b *model.Book) (string, error) {
 	script := "UPDATE book SET name=? where id=?"
-	result, err := repository.DB.ExecContext(ctx, script, id, b.Name)
+	result, err := repository.DB.ExecContext(ctx, script, b.Name, id)
 
 	if err != nil {
 		return "", err
