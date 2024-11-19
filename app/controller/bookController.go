@@ -95,12 +95,12 @@ func Update(c *fiber.Ctx) error {
 	book.Id = int32(id)
 
 	if _, err := bookRepo.Update(ctx, id, book); err != nil {
-		panic(err)
+		return err
 	}
 
 	dbBook, err := bookRepo.FindById(ctx, id)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	return c.JSON(fiber.Map{

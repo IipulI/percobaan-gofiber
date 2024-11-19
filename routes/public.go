@@ -7,11 +7,15 @@ import (
 )
 
 func PublicRoutes(a *fiber.App) {
+	api := a.Group("/api")
+
+	api.Post("/login", controller.Login)
+
 	route := a.Group("/api/v1")
 
 	route.Get("/books", controller.GetBooks)
 	route.Get("/book/:id<int>", controller.GetBookById)
 	route.Post("/book/insert", controller.Insert)
-	route.Post("/book/update/:id", controller.Update)
-	route.Post("/book/delete/:id", controller.Delete)
+	route.Put("/book/update/:id", controller.Update)
+	route.Delete("/book/delete/:id", controller.Delete)
 }

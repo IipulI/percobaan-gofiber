@@ -83,7 +83,7 @@ func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b *mod
 		return "", err
 	}
 	if rows != 1 {
-		return "", errors.New("Expected 1 row updated, affected " + strconv.Itoa(int(rows)))
+		return "Row not affected", errors.New("Expected 1 row updated, affected " + strconv.Itoa(int(rows)))
 	}
 
 	return "Row updated successfully", nil
