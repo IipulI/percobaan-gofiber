@@ -23,6 +23,12 @@ func Login(c *fiber.Ctx) error {
 		return err
 	}
 
+	if payload.User == "" || payload.Password == "" {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "User and password are required",
+		})
+	}
+
 	newRepo := repository.NewUserRepository(database.GetDB())
 	ctx := context.Background()
 
@@ -36,6 +42,7 @@ func Login(c *fiber.Ctx) error {
 	t.Set(jwt.SubjectKey, `localhost:5000`)
 	t.Set(jwt.AudienceKey, payload.User)
 	t.Set(jwt.IssuedAtKey, time.Now())
+	t.Set(jwt.ExpirationKey, time.Now().Add(1*time.Hour))
 
 	// Signing a token (using raw rsa.PrivateKey)
 	signed, err := jwt.Sign(t, jwt.WithKey(jwa.HS256, []byte(os.Getenv("JWT_SECRET_KEY"))))
