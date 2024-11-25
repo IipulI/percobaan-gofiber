@@ -20,7 +20,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 func (repository *UserRepositoryImpl) Login(ctx context.Context, user string, password string) (model.User, error) {
-	script := "select username, email, password  from `user` u where username = ? or email = ?"
+	script := "select u.username, u.email, u.password, r.slug from users u inner join roles as r on u.role_id = r.id where u.username = ? or email = ?"
 	rows, err := repository.DB.QueryContext(ctx, script, user, user)
 
 	userStruct := model.User{}
@@ -30,7 +30,7 @@ func (repository *UserRepositoryImpl) Login(ctx context.Context, user string, pa
 
 	defer rows.Close()
 	if rows.Next() {
-		rows.Scan(&userStruct.Username, &userStruct.Email, &userStruct.Password)
+		rows.Scan(&userStruct.Username, &userStruct.Email, &userStruct.Password, &userStruct.Role)
 	} else {
 		return userStruct, errors.New("user not found")
 	}

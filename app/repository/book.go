@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/IipulI/percobaan-gofiber/app/model"
@@ -71,22 +72,22 @@ func (repository *BookRepositoryImpl) FindAll(ctx context.Context) ([]model.Book
 }
 
 func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b *model.Book) (string, error) {
-	script := "UPDATE book SET name=? where id=?"
+	script := "UPDATE book SET name=? WHERE id=?"
 	result, err := repository.DB.ExecContext(ctx, script, b.Name, id)
-
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error executing update query: %w", err)
 	}
 
-	rows, err := result.RowsAffected()
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return "", err
-	}
-	if rows != 1 {
-		return "Row not affected", errors.New("Expected 1 row updated, affected " + strconv.Itoa(int(rows)))
+		return "", fmt.Errorf("error checking rows affected: %w", err)
 	}
 
-	return "Row updated successfully", nil
+	if rowsAffected != 1 {
+		return "", fmt.Errorf("update failed: expected 1 row affected, but got %d", rowsAffected)
+	}
+
+	return "1 row successfully updated", nil
 }
 
 func (repository *BookRepositoryImpl) Delete(ctx context.Context, id int) (string, error) {

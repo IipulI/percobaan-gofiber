@@ -43,6 +43,7 @@ func Login(c *fiber.Ctx) error {
 	t.Set(jwt.AudienceKey, payload.User)
 	t.Set(jwt.IssuedAtKey, time.Now())
 	t.Set(jwt.ExpirationKey, time.Now().Add(1*time.Hour))
+	t.Set("role", user.Role)
 
 	// Signing a token (using raw rsa.PrivateKey)
 	signed, err := jwt.Sign(t, jwt.WithKey(jwa.HS256, []byte(os.Getenv("JWT_SECRET_KEY"))))
@@ -58,6 +59,7 @@ func Login(c *fiber.Ctx) error {
 			"username": user.Username,
 			"email":    user.Email,
 			"token":    string(signed),
+			"role":     user.Role,
 		},
 	})
 }

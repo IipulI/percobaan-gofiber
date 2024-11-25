@@ -5,6 +5,7 @@ import (
 
 	"github.com/IipulI/percobaan-gofiber/app/model"
 	"github.com/IipulI/percobaan-gofiber/app/repository"
+	"github.com/IipulI/percobaan-gofiber/app/utils"
 	"github.com/IipulI/percobaan-gofiber/database"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +17,7 @@ func GetBooks(c *fiber.Ctx) error {
 
 	result, err := newRepo.FindAll(ctx)
 	if err != nil {
-		panic(err)
+		utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
 	return c.JSON(fiber.Map{
@@ -72,42 +73,36 @@ func Insert(c *fiber.Ctx) error {
 func Update(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, "invalid ID parameter", nil)
 	}
 
 	bookRepo := repository.NewBookRepository(database.GetDB())
 	ctx := context.Background()
 
+	// Validasi apakah ID ada
 	_, err = bookRepo.FindById(ctx, id)
 	if err != nil {
-		return c.JSON(fiber.Map{
-			"status":  422,
-			"message": "failed",
-			"data":    "",
-		})
+		return utils.JsonResponse(c, 404, "Book not found", nil)
 	}
 
+	// Parse body request
 	book := &model.Book{}
 	if err := c.BodyParser(book); err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, "invalid request body", nil)
 	}
 
-	book.Id = int32(id)
-
-	if _, err := bookRepo.Update(ctx, id, book); err != nil {
-		return err
+	// Validasi data
+	if book.Name == "" {
+		return utils.JsonResponse(c, 400, "Book name is required", nil)
 	}
 
-	dbBook, err := bookRepo.FindById(ctx, id)
+	// Update book
+	updatedBook, err := bookRepo.Update(ctx, id, book)
 	if err != nil {
-		return err
+		return utils.JsonResponse(c, 500, err.Error(), nil)
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  200,
-		"message": "success",
-		"data":    dbBook,
-	})
+	return utils.JsonResponse(c, 200, "success", updatedBook)
 }
 
 func Delete(c *fiber.Ctx) error {

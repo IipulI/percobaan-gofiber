@@ -52,6 +52,15 @@ func Protected() fiber.Handler {
 			})
 		}
 
+		resp, ok := token.Get("role")
+		if !ok {
+			return c.Status(500).JSON(fiber.Map{
+				"error": "No claim role found",
+			})
+		}
+
+		c.Locals("role", resp)
+
 		return c.Next()
 	}
 }

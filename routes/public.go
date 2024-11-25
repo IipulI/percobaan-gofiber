@@ -16,7 +16,7 @@ func PublicRoutes(a *fiber.App) {
 
 	route.Get("/books", controller.GetBooks)
 	route.Get("/book/:id<int>", controller.GetBookById)
-	route.Post("/book/insert", controller.Insert)
-	route.Put("/book/update/:id", controller.Update)
-	route.Delete("/book/delete/:id", controller.Delete)
+	route.Post("/book/insert", middleware.Authorization("admin", "staff"), controller.Insert)
+	route.Put("/book/update/:id", middleware.Authorization("admin", "staff"), controller.Update)
+	route.Delete("/book/delete/:id", middleware.Authorization("admin", "staff"), controller.Delete)
 }
