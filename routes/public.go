@@ -14,8 +14,8 @@ func PublicRoutes(a *fiber.App) {
 
 	route := a.Group("/api/v1", middleware.Protected())
 
-	route.Get("/user/detail", middleware.Authorization("admin", "staff", "user"), controller.GetUserDetail)
-	route.Post("/user/update", middleware.Authorization("admin", "staff", "user"), controller.UpdateUserDetail)
+	route.Get("/user/detail", middleware.Authorization("all"), controller.GetUserDetail)
+	route.Post("/user/update", middleware.Authorization("all"), controller.UpdateUserDetail)
 
 	route.Get("/books", controller.GetBooks)
 	route.Get("/book/:id<int>", controller.GetBookById)

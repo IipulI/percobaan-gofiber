@@ -18,6 +18,10 @@ func Authorization(allowedRoles ...string) fiber.Handler {
 
 		// Check if the user's role is one of the allowed roles
 		for _, role := range allowedRoles {
+			if role == "all" {
+				return c.Next()
+			}
+
 			if userRole == role {
 				// If valid, proceed with the request
 				return c.Next()

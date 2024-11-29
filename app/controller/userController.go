@@ -11,10 +11,12 @@ import (
 )
 
 func GetUserDetail(c *fiber.Ctx) error {
+	username := c.Locals("username").(string)
+
 	newRepo := repository.NewUserDetailRepository(database.GetDB())
 	ctx := context.Background()
 
-	result, err := newRepo.GetUserDetail(ctx, "user")
+	result, err := newRepo.GetUserDetail(ctx, username)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"error": err.Error(),
