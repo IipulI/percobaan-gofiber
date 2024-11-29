@@ -60,6 +60,7 @@ func Protected() fiber.Handler {
 		}
 
 		c.Locals("role", resp)
+		c.Locals("username", token.Audience()[0])
 
 		return c.Next()
 	}
