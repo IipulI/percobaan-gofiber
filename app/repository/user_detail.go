@@ -31,7 +31,7 @@ func (repository *UserDetailRepositoryImpl) GetUserDetail(ctx context.Context, u
 
 	defer rows.Close()
 	if rows.Next() {
-		rows.Scan(&userDetail.Id, &userDetail.Username, &userDetail.FirstName, &userDetail.LastName, &userDetail.Address, &userDetail.PhoneNumber, &userDetail.Gender, &userDetail.DateOfBirth.Time, &userDetail.ProfilePicture)
+		rows.Scan(&userDetail.Id, &userDetail.Username, &userDetail.FirstName, &userDetail.LastName, &userDetail.Address, &userDetail.PhoneNumber, &userDetail.Gender, &userDetail.DateOfBirth, &userDetail.ProfilePicture)
 
 		return userDetail, nil
 	} else {
@@ -41,7 +41,7 @@ func (repository *UserDetailRepositoryImpl) GetUserDetail(ctx context.Context, u
 
 func (repository *UserDetailRepositoryImpl) UpdateUserDetail(ctx context.Context, username string, paramUserDetail *model.UserDetail) (model.UserDetail, error) {
 	script := "UPDATE user_details SET first_name=?, last_name=?, address=?, phone_number=?, gender=?, date_of_birth=?, profile_picture=? where username=?"
-	result, err := repository.DB.ExecContext(ctx, script, paramUserDetail.FirstName, paramUserDetail.LastName, paramUserDetail.Address, paramUserDetail.PhoneNumber, paramUserDetail.Gender, paramUserDetail.DateOfBirth.Time, paramUserDetail.ProfilePicture, username)
+	result, err := repository.DB.ExecContext(ctx, script, paramUserDetail.FirstName, paramUserDetail.LastName, paramUserDetail.Address, paramUserDetail.PhoneNumber, paramUserDetail.Gender, paramUserDetail.DateOfBirth, paramUserDetail.ProfilePicture, username)
 
 	if err != nil {
 		return *paramUserDetail, errors.New("error executing update query")

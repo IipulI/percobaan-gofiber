@@ -42,7 +42,7 @@ func Login(c *fiber.Ctx) error {
 	t.Set(jwt.SubjectKey, `localhost:5000`)
 	t.Set(jwt.AudienceKey, payload.User)
 	t.Set(jwt.IssuedAtKey, time.Now())
-	t.Set(jwt.ExpirationKey, time.Now().Add(1*time.Hour))
+	t.Set(jwt.ExpirationKey, time.Now().Add(24*time.Hour))
 	t.Set("role", user.Role)
 
 	// Signing a token (using raw rsa.PrivateKey)

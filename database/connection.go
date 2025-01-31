@@ -9,9 +9,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var database = &sql.DB{}
+var database *sql.DB // Change this to a pointer
 
-func Connection() (err error) {
+func Connection() error {
 	urlConn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASS"),
@@ -22,7 +22,7 @@ func Connection() (err error) {
 
 	db, err := sql.Open("mysql", urlConn)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to open database: %w", err)
 	}
 
 	db.SetMaxIdleConns(10)
@@ -30,13 +30,13 @@ func Connection() (err error) {
 	db.SetConnMaxIdleTime(2 * time.Minute)
 	db.SetConnMaxLifetime(30 * time.Minute)
 
-	// Try to ping database.
+	// Try to ping database
 	if err := db.Ping(); err != nil {
-		defer db.Close() // close database connection
-		panic("can't sent ping to database")
+		db.Close() // Close database connection on failure
+		return fmt.Errorf("can't send ping to database: %w", err)
 	}
 
-	database = db
+	database = db // Correctly set the global database variable
 
 	return nil
 }

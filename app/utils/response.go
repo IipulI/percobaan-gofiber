@@ -1,6 +1,8 @@
 package utils
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 func JsonResponse(c *fiber.Ctx, status int, message string, data interface{}) error {
 	if status >= 200 && status <= 300 {

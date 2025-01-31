@@ -15,7 +15,7 @@ type BookRepository interface {
 	FindById(ctx context.Context, id int) (model.Book, error)
 	FindAll(ctx context.Context) ([]model.Book, error)
 	Update(ctx context.Context, id int, b *model.Book) (string, error)
-	Delete(ctx context.Context, id int) (string, error)
+	Delete(ctx context.Context, id int, b *model.Book) (string, error)
 }
 
 type BookRepositoryImpl struct{ DB *sql.DB }
@@ -25,8 +25,8 @@ func NewBookRepository(db *sql.DB) BookRepository {
 }
 
 func (repository *BookRepositoryImpl) Insert(ctx context.Context, book model.Book) (model.Book, error) {
-	script := "INSERT INTO book (id, name) values(?,?)"
-	_, err := repository.DB.ExecContext(ctx, script, book.Id, book.Name)
+	script := "INSERT INTO books (title, author, isbn, page, created_at) values(?,?,?,?,?)"
+	_, err := repository.DB.ExecContext(ctx, script, book.Title, book.Author, book.ISBN, book.Page)
 	if err != nil {
 		return book, err
 	}
@@ -35,7 +35,7 @@ func (repository *BookRepositoryImpl) Insert(ctx context.Context, book model.Boo
 }
 
 func (repository *BookRepositoryImpl) FindById(ctx context.Context, id int) (model.Book, error) {
-	script := "SELECT id, name from book where id = ?"
+	script := "SELECT * from books where id = ? and deleted_at is null"
 	rows, err := repository.DB.QueryContext(ctx, script, id)
 
 	book := model.Book{}
@@ -45,15 +45,15 @@ func (repository *BookRepositoryImpl) FindById(ctx context.Context, id int) (mod
 
 	defer rows.Close()
 	if rows.Next() {
-		rows.Scan(&book.Id, &book.Name)
+		rows.Scan(&book.Id, &book.Title, &book.Author, &book.ISBN, &book.Page, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 		return book, nil
 	} else {
-		return book, errors.New("Id" + strconv.Itoa(int(id)) + "tidak ditemukan")
+		return book, errors.New("Buku id " + strconv.Itoa(int(id)) + " tidak ditemukan")
 	}
 }
 
 func (repository *BookRepositoryImpl) FindAll(ctx context.Context) ([]model.Book, error) {
-	script := "SELECT id, name from book"
+	script := "SELECT * from books where deleted_at is null"
 	rows, err := repository.DB.QueryContext(ctx, script)
 	if err != nil {
 		return nil, err
@@ -64,7 +64,7 @@ func (repository *BookRepositoryImpl) FindAll(ctx context.Context) ([]model.Book
 
 	for rows.Next() {
 		book := model.Book{}
-		rows.Scan(&book.Id, &book.Name)
+		rows.Scan(&book.Id, &book.Title, &book.Author, &book.ISBN, &book.Page, &book.CreatedAt, &book.UpdatedAt, &book.DeletedAt)
 		books = append(books, book)
 	}
 
@@ -72,8 +72,8 @@ func (repository *BookRepositoryImpl) FindAll(ctx context.Context) ([]model.Book
 }
 
 func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b *model.Book) (string, error) {
-	script := "UPDATE book SET name=? WHERE id=?"
-	result, err := repository.DB.ExecContext(ctx, script, b.Name, id)
+	script := "UPDATE books SET title=?, updated_at=? WHERE id=?"
+	result, err := repository.DB.ExecContext(ctx, script, b.Title, b.UpdatedAt.ToTime(), id)
 	if err != nil {
 		return "", fmt.Errorf("error executing update query: %w", err)
 	}
@@ -90,9 +90,9 @@ func (repository *BookRepositoryImpl) Update(ctx context.Context, id int, b *mod
 	return "1 row successfully updated", nil
 }
 
-func (repository *BookRepositoryImpl) Delete(ctx context.Context, id int) (string, error) {
-	script := "delete from book where id=?"
-	_, err := repository.DB.ExecContext(ctx, script, id)
+func (repository *BookRepositoryImpl) Delete(ctx context.Context, id int, b *model.Book) (string, error) {
+	script := "UPDATE books SET deleted_at=? WHERE id=?"
+	_, err := repository.DB.ExecContext(ctx, script, b.DeletedAt.ToTime(), id)
 	if err != nil {
 		return "", err
 	} else {

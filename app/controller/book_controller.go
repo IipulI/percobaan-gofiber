@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	"github.com/IipulI/percobaan-gofiber/app/model"
 	"github.com/IipulI/percobaan-gofiber/app/repository"
@@ -17,20 +18,16 @@ func GetBooks(c *fiber.Ctx) error {
 
 	result, err := newRepo.FindAll(ctx)
 	if err != nil {
-		utils.JsonResponse(c, 400, err.Error(), "")
+		return utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  200,
-		"message": "success",
-		"data":    result,
-	})
+	return utils.JsonResponse(c, 200, "success", result)
 }
 
 func GetBookById(c *fiber.Ctx) error {
 	idBook, err := c.ParamsInt("id")
 	if err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
 	newRepo := repository.NewBookRepository(database.GetDB())
@@ -38,39 +35,33 @@ func GetBookById(c *fiber.Ctx) error {
 
 	result, err := newRepo.FindById(ctx, idBook)
 	if err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  200,
-		"message": "success",
-		"data":    result,
-	})
+	return utils.JsonResponse(c, 200, "success", result)
 }
 
-func Insert(c *fiber.Ctx) error {
+func InsertBook(c *fiber.Ctx) error {
 	book := &model.Book{}
 
+	// parsing data dari body request ke model book
 	if err := c.BodyParser(book); err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, err.Error(), "")
 	}
+	// book.CreatedAt = utils.NewCustomDateTime(time.Now())
 
 	bookRepo := repository.NewBookRepository(database.GetDB())
 	ctx := context.Background()
 
 	_, err := bookRepo.Insert(ctx, *book)
 	if err != nil {
-		panic(err)
+		return utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  201,
-		"message": "success",
-		"data":    nil,
-	})
+	return utils.JsonResponse(c, 200, "success", nil)
 }
 
-func Update(c *fiber.Ctx) error {
+func UpdateBook(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return utils.JsonResponse(c, 400, "invalid ID parameter", nil)
@@ -90,9 +81,10 @@ func Update(c *fiber.Ctx) error {
 	if err := c.BodyParser(book); err != nil {
 		return utils.JsonResponse(c, 400, "invalid request body", nil)
 	}
+	book.UpdatedAt = utils.NewCustomDateTime(time.Now())
 
 	// Validasi data
-	if book.Name == "" {
+	if book.Title == "" {
 		return utils.JsonResponse(c, 400, "Book name is required", nil)
 	}
 
@@ -105,10 +97,10 @@ func Update(c *fiber.Ctx) error {
 	return utils.JsonResponse(c, 200, "success", updatedBook)
 }
 
-func Delete(c *fiber.Ctx) error {
+func DeleteBook(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
-		panic(err)
+		utils.JsonResponse(c, 400, err.Error(), "")
 	}
 
 	bookRepo := repository.NewBookRepository(database.GetDB())
@@ -123,7 +115,9 @@ func Delete(c *fiber.Ctx) error {
 		})
 	}
 
-	msg, err := bookRepo.Delete(ctx, id)
+	book := &model.Book{}
+	book.DeletedAt = utils.NewCustomDateTime(time.Now())
+	msg, err := bookRepo.Delete(ctx, id, book)
 	if err != nil {
 		return c.JSON(fiber.Map{
 			"status":  422,
